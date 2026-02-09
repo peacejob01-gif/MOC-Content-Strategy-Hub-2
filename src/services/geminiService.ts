@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 import { Category, ContentType } from "../types";
 
-// ใน Vite ต้องใช้ import.meta.env แทน process.env
+// ใช้ import.meta.env สำหรับ Vite (เพื่อให้รันบน Vercel ได้)
 const apiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
 const genAI = new GoogleGenerativeAI(apiKey);
 
@@ -17,17 +17,15 @@ export const analyzeNewsContent = async (
   currentMonthTheme: string
 ): Promise<AnalysisResult> => {
   if (!apiKey) {
-    // ปรับให้ Return ค่า Default แทนการ Throw Error เพื่อไม่ให้หน้าเว็บขาว (Crash)
-    console.warn("Missing VITE_GEMINI_API_KEY");
     return {
-      summary: "กรุณาตั้งค่า API Key เพื่อใช้งานระบบวิเคราะห์",
+      summary: "กรุณาตั้งค่า API Key ใน Vercel (VITE_GEMINI_API_KEY)",
       contentType: "PR Press",
       category: "MOC Update",
       isHighlight: false
     };
   }
 
-  // ใช้โมเดล gemini-1.5-flash (เร็วและเสถียรกว่า)
+  // ใช้รุ่น 1.5 Flash ที่เสถียรที่สุด
   const model = genAI.getGenerativeModel({
     model: "gemini-1.5-flash",
     generationConfig: {
@@ -53,13 +51,10 @@ export const analyzeNewsContent = async (
 
   const prompt = `
     Analyze the following news text for the Ministry of Commerce (MOC) content strategy.
-    1. Summarize the content concisely in Thai.
-    2. Determine format: 'Video', 'Banner', 'PR Press', or 'Photo Album'.
-    3. Categorize: 'Trust & Impact', 'MOC Update', or 'Policy to People'.
-    4. Set isHighlight to true if it matches theme: "${currentMonthTheme}".
-
-    News Content:
-    "${text}"
+    - Summarize in Thai.
+    - Match with theme: "${currentMonthTheme}".
+    
+    Content: "${text}"
   `;
 
   try {
@@ -69,7 +64,7 @@ export const analyzeNewsContent = async (
   } catch (error) {
     console.error("Gemini Error:", error);
     return {
-      summary: "ไม่สามารถวิเคราะห์ข้อมูลได้ โปรดลองอีกครั้ง",
+      summary: "เกิดข้อผิดพลาดในการวิเคราะห์ โปรดตรวจสอบข้อมูลด้วยตนเอง",
       contentType: "PR Press",
       category: "MOC Update",
       isHighlight: false
