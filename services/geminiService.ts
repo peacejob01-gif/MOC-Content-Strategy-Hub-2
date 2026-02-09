@@ -1,4 +1,4 @@
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 import { Category, ContentType } from "../types";
 
 const apiKey = process.env.API_KEY || '';
